@@ -1,23 +1,17 @@
 package com.yupi.sqlfather.core;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.yupi.sqlfather.core.builder.FrontendCodeBuilder;
+import com.yupi.sqlfather.core.builder.*;
+import com.yupi.sqlfather.core.model.vo.GenerateVO;
 import com.yupi.sqlfather.core.schema.SchemaException;
 import com.yupi.sqlfather.core.schema.TableSchema;
 import com.yupi.sqlfather.core.schema.TableSchema.Field;
-import com.yupi.sqlfather.core.builder.DataBuilder;
-import com.yupi.sqlfather.core.builder.JavaCodeBuilder;
-import com.yupi.sqlfather.core.builder.JsonBuilder;
-import com.yupi.sqlfather.core.builder.SqlBuilder;
-import com.yupi.sqlfather.core.model.vo.GenerateVO;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 集中数据生成器
@@ -54,6 +48,13 @@ public class GeneratorFacade {
         String javaObjectCode = JavaCodeBuilder.buildJavaObjectCode(tableSchema, dataList);
         // 生成 typescript 类型代码
         String typescriptTypeCode = FrontendCodeBuilder.buildTypeScriptTypeCode(tableSchema);
+
+        //生成 java mybatis-plus代码
+        String javaMybatisPlusMapperCode = JavaCodeBuilder.buildJavaMybatisPlusCode(tableSchema,"java_mybatis_plus_mapper.ftl");
+        String javaMybatisPlusServiceCode = JavaCodeBuilder.buildJavaMybatisPlusCode(tableSchema,"java_mybatis_plus_service.ftl");
+        String javaMybatisPlusServiceImplCode = JavaCodeBuilder.buildJavaMybatisPlusCode(tableSchema,"java_mybatis_plus_service_impl.ftl");
+        String javaMybatisPlusControllerCode = JavaCodeBuilder.buildJavaMybatisPlusCode(tableSchema,"java_mybatis_plus_controller.ftl");
+
         // 封装返回
         GenerateVO generateVO = new GenerateVO();
         generateVO.setTableSchema(tableSchema);
@@ -64,6 +65,10 @@ public class GeneratorFacade {
         generateVO.setJavaEntityCode(javaEntityCode);
         generateVO.setJavaObjectCode(javaObjectCode);
         generateVO.setTypescriptTypeCode(typescriptTypeCode);
+        generateVO.setJavaMybatisPlusMapperCode(javaMybatisPlusMapperCode);
+        generateVO.setJavaMybatisPlusServiceCode(javaMybatisPlusServiceCode);
+        generateVO.setJavaMybatisPlusServiceImplCode(javaMybatisPlusServiceImplCode);
+        generateVO.setJavaMybatisPlusControllerCode(javaMybatisPlusControllerCode);
         return generateVO;
     }
 

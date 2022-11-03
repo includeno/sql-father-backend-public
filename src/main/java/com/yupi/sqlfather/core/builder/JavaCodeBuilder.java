@@ -2,28 +2,29 @@ package com.yupi.sqlfather.core.builder;
 
 import cn.hutool.core.util.StrUtil;
 import com.yupi.sqlfather.common.ErrorCode;
-import com.yupi.sqlfather.core.model.enums.FieldTypeEnum;
 import com.yupi.sqlfather.core.model.dto.JavaEntityGenerateDTO;
 import com.yupi.sqlfather.core.model.dto.JavaEntityGenerateDTO.FieldDTO;
 import com.yupi.sqlfather.core.model.dto.JavaObjectGenerateDTO;
+import com.yupi.sqlfather.core.model.enums.FieldTypeEnum;
 import com.yupi.sqlfather.core.model.enums.MockTypeEnum;
 import com.yupi.sqlfather.core.schema.TableSchema;
 import com.yupi.sqlfather.core.schema.TableSchema.Field;
 import com.yupi.sqlfather.exception.BusinessException;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.annotation.Resource;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 
 /**
  * Java 代码生成器
@@ -118,6 +119,41 @@ public class JavaCodeBuilder {
         StringWriter stringWriter = new StringWriter();
         Template temp = configuration.getTemplate("java_object.ftl");
         temp.process(javaObjectGenerateDTO, stringWriter);
+        return stringWriter.toString();
+    }
+
+
+    /**
+     * 构造 Java 实体代码
+     *
+     * @param tableSchema 表概要
+     * @return 生成的 java 代码
+     */
+    @SneakyThrows
+    public static String buildJavaMybatisPlusCode(TableSchema tableSchema,String templateName) {
+        // 传递参数
+        JavaEntityGenerateDTO javaEntityGenerateDTO = new JavaEntityGenerateDTO();
+        String tableName = tableSchema.getTableName();
+        String tableComment = tableSchema.getTableComment();
+        String upperCamelTableName = StringUtils.capitalize(StrUtil.toCamelCase(tableName));
+        // 类名为大写的表名
+        javaEntityGenerateDTO.setClassName(upperCamelTableName);
+        // 类注释为表注释 > 表名
+        javaEntityGenerateDTO.setClassComment(Optional.ofNullable(tableComment).orElse(upperCamelTableName));
+        // 依次填充每一列
+        List<FieldDTO> fieldDTOList = new ArrayList<>();
+        for (Field field : tableSchema.getFieldList()) {
+            FieldDTO fieldDTO = new FieldDTO();
+            fieldDTO.setComment(field.getComment());
+            FieldTypeEnum fieldTypeEnum = Optional.ofNullable(FieldTypeEnum.getEnumByValue(field.getFieldType())).orElse(FieldTypeEnum.TEXT);
+            fieldDTO.setJavaType(fieldTypeEnum.getJavaType());
+            fieldDTO.setFieldName(StrUtil.toCamelCase(field.getFieldName()));
+            fieldDTOList.add(fieldDTO);
+        }
+        javaEntityGenerateDTO.setFieldList(fieldDTOList);
+        StringWriter stringWriter = new StringWriter();
+        Template temp = configuration.getTemplate(templateName);
+        temp.process(javaEntityGenerateDTO, stringWriter);
         return stringWriter.toString();
     }
 

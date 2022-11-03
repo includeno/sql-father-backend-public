@@ -1,10 +1,11 @@
 package com.yupi.sqlfather.core.model.vo;
 
 import com.yupi.sqlfather.core.schema.TableSchema;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import lombok.Data;
 
 /**
  * 生成的返回值
@@ -29,6 +30,14 @@ public class GenerateVO implements Serializable {
     private String javaObjectCode;
 
     private String typescriptTypeCode;
+
+    private String javaMybatisPlusMapperCode;
+
+    private String javaMybatisPlusServiceCode;
+
+    private String javaMybatisPlusServiceImplCode;
+
+    private String javaMybatisPlusControllerCode;
 
     private static final long serialVersionUID = 7122637163626243606L;
 }
